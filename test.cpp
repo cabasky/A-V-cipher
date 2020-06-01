@@ -406,22 +406,49 @@ void decrypt(byte in[4*4], word w[4*(Nr+1)])
 		key[i] = w[4*Nr+i];
 	AddRoundKey(in, key);
 
+	for(int i=0;i<4;i++){
+		for(int j=0;j<4;j++){
+			printf("%02lx",in[4*j+i].to_ulong());
+		}
+	}
+	puts("");
 	for(int round=Nr-1; round>0; --round)
 	{
 		InvShiftRows(in);
 		InvSubBytes(in);
 		for(int i=0; i<4; ++i)
 			key[i] = w[4*round+i];
-		AddRoundKey(in, key);
-		InvMixColumns(in);
-		
-	}
 
+		for(int i=0;i<4;i++){
+			for(int j=0;j<4;j++){
+				printf("%02lx",in[4*j+i].to_ulong());
+			}
+		}
+		puts("");
+		AddRoundKey(in, key);
+		for(int i=0;i<4;i++){
+			for(int j=0;j<4;j++){
+				printf("%02lx",in[4*j+i].to_ulong());
+			}
+		}
+		puts("");
+		InvMixColumns(in);
+
+
+		for(int i=0;i<4;i++){
+			for(int j=0;j<4;j++){
+				printf("%02lx",in[4*j+i].to_ulong());
+			}
+		}
+		puts("");
+		puts("");
+	}
 	InvShiftRows(in);
 	InvSubBytes(in);
 	for(int i=0; i<4; ++i)
 		key[i] = w[i];
 	AddRoundKey(in, key);
+	cout<<GFMul(byte(0x12),byte(0x34)).to_ulong()<<endl;
 }
 
 /**********************************************************************/  
@@ -438,10 +465,10 @@ int main()
 				    0x39, 0x30, 0x31, 0x32, 
 				    0x33, 0x34, 0x35, 0x36};
 
-	byte plain[16] = {0x77, 0x6b, 0x64, 0x75, 
-					0x75, 0x6f, 0x61, 0x6b,
-					0x79, 0x65, 0x69, 0x69,
-					0x69, 0x69, 0x73, 0x21}; 
+	byte plain[16] = {0x00, 0x00, 0x00, 0x00, 
+					0x00, 0xff, 0xff, 0xff,
+					0x00, 0xff, 0xff, 0xff,
+					0xff, 0xff, 0xff, 0xff}; 
 	// 输出密钥
 	cout << "密钥是：";
 	for(int i=0; i<16; ++i)
