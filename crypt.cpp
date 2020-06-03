@@ -6,71 +6,60 @@
 #include "bmpreader.h"
 #include "aes.h"
 #include "daes.h"
+#include "vcrypt.h"
 using namespace std;
 typedef unsigned int i32;
 typedef unsigned char i8;
 
 int main(){
     //freopen("out2.txt","w",stdout);
-    FILE *bmpIn=fopen("a.bmp","rb");
+    i8 path[128],key[1024];
+    i32 f1,f2;
+    printf("Input the file name:\n");
+    scanf("%s",path);
+    FILE *bmpIn=fopen((const char *)path,"rb");
+    FILE *bmpOut=fopen("result.bmp","wb");
     bmpClass rawBmp;
     rawBmp.init(bmpIn);
     fclose(bmpIn);
-    int psize=(*(rawBmp.size)+3)>>2,p=0;
-    i32 *cryptRes=(i32*)malloc((psize<<2)+16);
-    cout<<endl;
-    i32 key[100]={
-        0x31323334,0x35363738,0x39303132,0x33343536
-    };
-    i32 data32[100];
-    i32 dst[100];
-    i8 data[100]="wuyikoeidaisuki!";
-    c2i(data,data32,16);
-    cout<<0<<endl;
-
-    keyExt(key);
-    while(p<psize){
-        aesBlock((i32*)rawBmp.bmpBuffer+p,key,cryptRes+p);
-        p+=4;
+    printf("Select a algorithm to deal with data: 1.AES 2.Vigenere\n");
+    scanf("%d",&f1);
+    printf("Encrypt(1) or decrypt(2):");
+    scanf("%d",&f2);
+    printf("Input your key:\n");
+    if(f1==1){
+        int psize=(*(rawBmp.size)+3)>>2,p=0;
+        i32 *cryptRes=(i32*)malloc((psize<<2)+16);
+        i32 keyAES[100];
+        scanf("%s",key);
+        while(strlen((const char *)key)!=16){    
+            printf("The length must be 16 bytes, input again:\n");
+            scanf("%s",key);
+        }
+        c2i(key,keyAES,16);
+        keyExt(keyAES);
+        if(f2==1)
+            while(p<psize){
+                aesBlock((i32*)rawBmp.bmpBuffer+p,keyAES,cryptRes+p);
+                p+=4;
+            }
+        else if(f2==2){
+            keyInv(keyAES);
+            while(p<psize){
+                aesBlockInv((i32*)rawBmp.bmpBuffer+p,keyAES,cryptRes+p);
+                p+=4;
+            }
+        }
+        rawBmp.save(bmpOut,cryptRes);
+        free(cryptRes);
     }
-    cout<<1<<endl;
-    aesBlock(data32,key,dst);
-    for(int i=0;i<4;i++){
-        printf("%08x",cryptRes[i]);
+    else if(f1==2){
+        scanf("%s",key);
+        int len=strlen((const char *)key);
+        if(f2==2) vKeyInv(key);
+        vBlock((i8*)rawBmp.bmpBuffer,*(rawBmp.size),key,len);
+        rawBmp.save(bmpOut,(i32*)rawBmp.bmpBuffer);
     }
-    cout<<endl;
-    for(int i=0;i<4;i++){
-        printf("%08x",dst[i]);
-    }
-    cout<<endl;
-    FILE *bmpOut=fopen("b.bmp","wb");
-    rawBmp.save(bmpOut,cryptRes);
-    fclose(bmpIn);
-    fclose(bmpOut);
-    i32 data2[4]={0x77a55d65,0xd58e57b4,0xec08a861,0xbd82af89};
-    i32 dst2[100];
-    aesBlockInv(data2,key,dst2);
-    for(int i=0;i<4;i++){
-        printf("%08x",dst2[i]);
-    }
-    cout<<endl;
-    //free(cryptRes);
-    bmpIn=fopen("b.bmp","rb");
-    bmpClass r2;
-    r2.init(bmpIn);
-    psize=(*(r2.size)+3)>>2,p=0;
-    cout<<3<<endl;
-    keyExt(key);
-    keyInv(key);
-    while(p<psize){
-        aesBlockInv((i32*)r2.bmpBuffer+p,key,cryptRes+p);
-        p+=4;
-    }
-    cout<<2<<endl;
-    bmpOut=fopen("c.bmp","wb");
-    rawBmp.save(bmpOut,cryptRes);
-    free(cryptRes);
-    fclose(bmpIn);
     fclose(bmpOut);
     return 0;
 }

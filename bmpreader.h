@@ -15,8 +15,7 @@ struct bmpClass{
         bmpBuffer=(int *)malloc(((*size+7)>>2)<<2);
         memset(bmpBuffer,0,((*size+7)>>2)<<2);
         fread(bmpBuffer,1,*size,bmpInput);
-        cout<<*(int*)(infoHdr+4)<<" "<<*(int*)(infoHdr+8)<<" "<<*size<<endl;
-        //free(bmpBuffer);
+        printf("Successfully read bitmap data of %d bytes.\n",*size);
     }
     void save(FILE *bmpOutput,unsigned int *cryptRes){
         fwrite(fileHdr,1,14,bmpOutput);
